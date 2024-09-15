@@ -9,15 +9,25 @@ function InstanceBox() {
        <div className="flex flex-col gap-10">
        <h1 className="text-xl font-medium">InstanceBox</h1>
        <div className="flex flex-col items-center gap-5">
-        <button className="border-2 border-black rounded-md p-5" onClick={()=>babylonInstanceEngine.ground()}>
+        {/* <button className="border-2 border-black rounded-md p-5" onClick={()=>babylonInstanceEngine.ground()}>
             Ground
         </button>
         <button className="border-2 border-black rounded-md p-5" onClick={()=>{babylonInstanceEngine.gizmo(); babylonInstanceEngine.box(1);  }}>
             Box
         </button>
-        <button className="border-2 border-black rounded-md p-5">
+        <button className="border-2 border-black rounded-md p-5" onClick={()=>babylonInstanceEngine.sphere()}>
+            Sphere
+        </button> */}
+         <button className="border-2 border-black rounded-md p-5">
+            Ground
+        </button>
+        <button className="border-2 border-black rounded-md p-5" >
+            Box
+        </button>
+        <button className="border-2 border-black rounded-md p-5" >
             Sphere
         </button>
+
        </div>
        </div>
       

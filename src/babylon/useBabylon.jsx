@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, useRef } from "react";
-import { Engine, Scene } from "@babylonjs/core";
+import { Engine, Scene,KeyboardEventTypes } from "@babylonjs/core";
 import {
   FreeCamera,
   Vector3,
@@ -37,19 +37,19 @@ export const BabylonProvider = ({ children }) => {
         // console.log("Scene ios working");
         // console.log(this.scene);
         // This creates and positions a free camera (non-mesh)
-        const camera = new FreeCamera(
+         this.camera = new FreeCamera(
           "camera1",
           new Vector3(0, 5, -10),
           this.scene
         );
 
         // This targets the camera to scene origin
-        camera.setTarget(Vector3.Zero());
+        this.camera.setTarget(Vector3.Zero());
 
         const canvas = this.scene.getEngine().getRenderingCanvas();
 
         // This attaches the camera to the canvas
-        camera.attachControl(_canva, true);
+        this.camera.attachControl(_canva, true);
 
         // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
         const light = new HemisphericLight(
@@ -61,6 +61,9 @@ export const BabylonProvider = ({ children }) => {
         // Default intensity is 1. Let's dim the light a small amount
         light.intensity = 0.7;
         console.log("Scene ios working");
+        // new DebugLayer(this.scene).show({embedMode:true})
+// this.run();
+
       } else {
         // this.scene.onReadyObservable.addOnce((scene) => onSceneReady(scene));
         console.log("Scene is not working");
@@ -71,9 +74,15 @@ export const BabylonProvider = ({ children }) => {
       if (this.engine && this.scene) {
         this.engine.runRenderLoop(() => {
           // if (typeof onRender === "function") onRender(scene);
+        //   new DebugLayer(this.scene).show({embedMode:true})
+
           this.scene.render();
         });
       }
+    }
+
+    debu(){
+        new DebugLayer(this.scene).show({embedMode:true})
     }
 
     resize() {
@@ -118,6 +127,112 @@ export const BabylonProvider = ({ children }) => {
         this.scene
       );
       console.log("ground : " + gd);
+    }
+
+    sphere(){
+        const keyPress = {
+            w: false,
+            a: false,
+            s: false,
+            d: false
+        }
+        const initialSpeed = 0;
+        const desiredSpeed = 0.01;
+        const acceleration = 0.0001;
+        const deceleration = 0.001;
+    
+        let currentSpeed = initialSpeed;
+    
+        // Set up easing function
+        const lerp = (start, end, t) => {
+        return start * (1 - t) + end * t;
+        };
+
+        var sphere = MeshBuilder.CreateSphere("sphere", {diameter: 2, segments: 32}, this.scene);
+
+    // Move the sphere upward 1/2 its height
+    sphere.position.y = 1;
+    this.scene.onKeyboardObservable.add((kbInfo) => {
+		switch (kbInfo.type) {
+			case KeyboardEventTypes.KEYDOWN:
+				switch (kbInfo.event.key) {
+                    case "a":
+                    case "A":
+                        keyPress['a'] = true;
+                    break
+                    case "d":
+                    case "D":
+                        keyPress['d'] = true;
+                    break
+                    case "w":
+                    case "W":
+                        keyPress['w'] = true;
+                    break
+                    case "s":
+                    case "S":
+                        keyPress['s'] = true;
+                    break
+                }
+			break;
+            case KeyboardEventTypes.KEYUP:
+                switch (kbInfo.event.key) {
+                    case "a":
+                    case "A":
+                        keyPress['a'] = false;
+                    break
+                    case "d":
+                    case "D":
+                        keyPress['d'] = false;
+                    break
+                    case "w":
+                    case "W":
+                        keyPress['w'] = false;
+                    break
+                    case "s":
+                    case "S":
+                        keyPress['s'] = false;
+                    break
+                }
+            break;
+		}
+	});
+
+    this.scene.registerBeforeRender(() => {
+        if (keyPress['w'] || keyPress['a'] || keyPress['s'] || keyPress['d']) {
+            if (currentSpeed < desiredSpeed) {
+                currentSpeed = Math.min(currentSpeed + acceleration, desiredSpeed);
+            }
+        } else {
+            if (currentSpeed > 0) {
+                currentSpeed = Math.max(currentSpeed - deceleration, 0);
+            }
+        }
+        const sign = Math.sign(this.camera.alpha);
+        let movement = new Vector3(0,0,0);
+        if (keyPress['w']) {
+            const angle = -this.camera.alpha + (sign === -1 ? Math.PI / 2 : -Math.PI / 2);
+            movement = new Vector3(Math.sin(angle), 0, Math.cos(angle));
+		}
+        if (keyPress['a']) {
+            const angle = this.camera.alpha + (sign === 1 ? -Math.PI : Math.PI);
+            movement = new Vector3(-Math.sin(angle), 0, -Math.cos(angle));
+        }
+        if (keyPress['d']) {
+            const angle = this.camera.alpha + (sign === 1 ? -Math.PI : Math.PI);
+            movement = new Vector3(Math.sin(angle), 0, Math.cos(angle));
+        }
+        if (keyPress['s']) {
+            const angle = -this.camera.alpha + (sign === -1 ? Math.PI / 2 : -Math.PI / 2);
+            movement = new Vector3(-Math.sin(angle), 0, -Math.cos(angle));
+        }
+
+        movement.normalize();
+        const scaledSpeed = currentSpeed * this.scene.getEngine().getDeltaTime();
+        movement.scaleInPlace(scaledSpeed);
+        sphere.position.addInPlace(movement);
+
+    })
+    this.run();
     }
   }
   const babylonInstanceEngine = new BabylonInstanceEngine();
