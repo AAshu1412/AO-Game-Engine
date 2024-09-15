@@ -44,7 +44,7 @@ const onSceneReady = (scene) => {
 // });
 // console.log("Isvibible", JSON.stringify(deb.isVisible()));
 // scene.debugLayer.show();  
-// new DebugLayer(scene).show({embedMode:true})
+new DebugLayer(scene).show({embedMode:true})
 
 
 };
