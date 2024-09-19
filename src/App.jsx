@@ -64,7 +64,7 @@ function App() {
    <SideTools />
      <InstanceBox/>
      <SceneBox/>
-     <Properties/>
+     {/* <Properties/> */}
    </div>
     
     </>
