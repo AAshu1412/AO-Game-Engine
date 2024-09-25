@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@babylonjs/core": "^7.24.0",
+    "@syncfusion/ej2-react-navigations": "^27.1.50",
     "babylonjs": "^7.25.0",
     "babylonjs-hook": "^0.1.1",
     "class-variance-authority": "^0.7.0",
@@ -18,6 +19,8 @@
     "flatted": "^3.3.1",
     "lucide-react": "^0.440.0",
     "react": "^18.3.1",
+    "react-accessible-treeview": "^2.9.1",
+    "react-arborist": "^3.4.0",
     "react-dom": "^18.3.1",
     "react-resizable-panels": "^2.1.2",
     "tailwind-merge": "^2.5.2",

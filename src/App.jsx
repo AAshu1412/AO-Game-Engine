@@ -4,12 +4,11 @@
 // import SceneComponent from 'babylonjs-hook'; // if you install 'babylonjs-hook' NPM.
 // // import "./App.css";
 
-import InstanceBox from "./components/InstanceBox"
-import Properties from "./components/Properties"
-import SceneBox from "./components/SceneBox"
-import SideTools from "./components/SideTools"
-
-
+import CustomBuilder from "./components/CustomBuilder";
+import InstanceBox from "./components/InstanceBox";
+import Properties from "./components/Properties";
+import SceneBox from "./components/SceneBox";
+import SideTools from "./components/SideTools";
 
 // let box;
 
@@ -53,22 +52,19 @@ import SideTools from "./components/SideTools"
 //   }
 // };
 
-
 function App() {
-
   return (
     <>
-     {/* fafa */}
-     {/* <SceneComponent antialias onSceneReady={onSceneReady} onRender={onRender} id="my-canvas" /> */}
-   <div className="flex flex-row">
-   <SideTools />
-     <InstanceBox/>
-     <SceneBox/>
-     {/* <Properties/> */}
-   </div>
-    
+      {/* <SceneComponent antialias onSceneReady={onSceneReady} onRender={onRender} id="my-canvas" /> */}
+      <div className="flex flex-row">
+        {/* <SideTools /> */}
+        <InstanceBox />
+        <CustomBuilder />
+        <SceneBox />
+        {/* <Properties/> */}
+      </div>
     </>
-  )
+  );
 }
 
-export default App
+export default App;

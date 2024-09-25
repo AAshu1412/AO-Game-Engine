@@ -1,8 +1,16 @@
 import { useEffect, useRef } from "react";
-import { Engine, Scene, DebugLayer} from "@babylonjs/core";
+import { Engine, Scene, DebugLayer } from "@babylonjs/core";
 // import {DebugLayer} from "babylonjs";
 
-export default function SceneComponent ({ antialias, engineOptions, adaptToDeviceRatio, sceneOptions, onRender, onSceneReady, ...rest }){
+export default function SceneComponent({
+  antialias,
+  engineOptions,
+  adaptToDeviceRatio,
+  sceneOptions,
+  onRender,
+  onSceneReady,
+  ...rest
+}) {
   const reactCanvas = useRef(null);
 
   // set up basic engine and scene
@@ -11,11 +19,15 @@ export default function SceneComponent ({ antialias, engineOptions, adaptToDevic
 
     if (!canvas) return;
 
-    const engine = new Engine(canvas, antialias, engineOptions, adaptToDeviceRatio);
+    const engine = new Engine(
+      canvas,
+      antialias,
+      engineOptions,
+      adaptToDeviceRatio
+    );
     const scene = new Scene(engine, sceneOptions);
     if (scene.isReady()) {
       onSceneReady(scene);
-    
     } else {
       scene.onReadyObservable.addOnce((scene) => onSceneReady(scene));
     }
@@ -38,7 +50,14 @@ export default function SceneComponent ({ antialias, engineOptions, adaptToDevic
         window.removeEventListener("resize", resize);
       }
     };
-  }, [antialias, engineOptions, adaptToDeviceRatio, sceneOptions, onRender, onSceneReady]);
+  }, [
+    antialias,
+    engineOptions,
+    adaptToDeviceRatio,
+    sceneOptions,
+    onRender,
+    onSceneReady,
+  ]);
 
   return <canvas ref={reactCanvas} {...rest} />;
-};
+}

@@ -11,6 +11,11 @@ import {
   UtilityLayerRenderer,
   ScaleGizmo,
   DebugLayer,
+  LightGizmo,
+  GizmoManager,
+  PositionGizmo,
+  Color3,
+  DirectionalLight,
 } from "@babylonjs/core";
 import { parse, stringify, toJSON, fromJSON } from "flatted";
 
@@ -22,6 +27,8 @@ export const BabylonContext = createContext();
 // Provider -----------------------
 
 export const BabylonProvider = ({ children }) => {
+  const [allMesh, setAllMesh] = useState([]);
+
   class BabylonInstanceEngine {
     reactCanvas = null;
     engine;
@@ -38,7 +45,7 @@ export const BabylonProvider = ({ children }) => {
       this.scene = new Scene(this.engine);
       this.run();
       if (this.scene.isReady()) {
-        // console.log(this.scene);
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // This creates and positions a free camera (non-mesh)
         // this.camera = new FreeCamera(
         //   "camera1",
@@ -53,6 +60,7 @@ export const BabylonProvider = ({ children }) => {
 
         // // This attaches the camera to the canvas
         // this.camera.attachControl(this.canvas, true);
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         this.camera = new ArcRotateCamera(
           "camera1",
@@ -78,14 +86,51 @@ export const BabylonProvider = ({ children }) => {
 
         // Default intensity is 1. Let's dim the light a small amount
         light.intensity = 0.7;
-
-        console.log("Scene ios working");
+        light.diffuse = new Color3(1, 0, 0);
+        light.groundColor = new Color3(0, 0, 1);
+        light.specular = new Color3(0, 1, 0);
+        this.llightGizmo(light);
+        console.log("Scene is working");
         // new DebugLayer(this.scene).show({embedMode:true})
         // this.run();
       } else {
         // this.scene.onReadyObservable.addOnce((scene) => onSceneReady(scene));
         console.log("Scene is not working");
       }
+    }
+
+    llightGizmo(customLight) {
+      const lightGizmo = new LightGizmo();
+
+      lightGizmo.scaleRatio = 2;
+
+      lightGizmo.light = customLight;
+
+      const gizmoManager = new GizmoManager(this.scene);
+
+      gizmoManager.positionGizmoEnabled = true;
+
+      gizmoManager.rotationGizmoEnabled = true;
+
+      gizmoManager.usePointerToAttachGizmos = false;
+
+      gizmoManager.attachToMesh(lightGizmo.attachedMesh);
+
+      ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      //  const utilLayer= new UtilityLayerRenderer(this.scene);
+      //   var gizmo_scale = new PositionGizmo(utilLayer);
+      //     var gizmo_rational = new BABYLON.RotationGizmo(utilLayer);
+
+      //     gizmo_scale.attachedMesh = customLight;
+      //     gizmo_rational.attachedMesh = customLight;
+
+      //     // Keep the gizmo fixed to local rotation
+      //     gizmo_scale.updateGizmoRotationToMatchAttachedMesh = true;
+      //     gizmo_scale.updateGizmoPositionToMatchAttachedMesh = true;
+      //     gizmo_rational.updateGizmoRotationToMatchAttachedMesh = false;
+      //     gizmo_rational.updateGizmoPositionToMatchAttachedMesh = true;
+      ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      console.log("IDK it works");
     }
 
     run() {
@@ -97,6 +142,10 @@ export const BabylonProvider = ({ children }) => {
           this.scene.render();
         });
       }
+    }
+
+    returnScene() {
+      return this.scene;
     }
 
     debu() {
@@ -220,159 +269,375 @@ export const BabylonProvider = ({ children }) => {
         }
       });
     }
+  }
 
-    box(y_pos) {
-      // Our built-in 'box' shape.
-      const boxs = MeshBuilder.CreateBox(
+  class Box extends BabylonInstanceEngine {
+    constructor(scene) {
+      super(scene);
+      this.box = MeshBuilder.CreateBox(
         "box",
         { size: 2, updatable: true },
         this.scene
       );
 
-      // Move the box upward 1/2 its height
-      boxs.position.y = y_pos;
-
-      //   var gizmo_scale = new ScaleGizmo(this.utilLayer);
-      //   var gizmo_rational = new BABYLON.RotationGizmo(this.utilLayer);
-
-      //   gizmo_scale.attachedMesh = boxs;
-      //   gizmo_rational.attachedMesh = boxs;
-
-      //   // Keep the gizmo fixed to local rotation
-      //   gizmo_scale.updateGizmoRotationToMatchAttachedMesh = true;
-      //   gizmo_scale.updateGizmoPositionToMatchAttachedMesh = true;
-      //   gizmo_rational.updateGizmoRotationToMatchAttachedMesh = false;
-      //   gizmo_rational.updateGizmoPositionToMatchAttachedMesh = true;
-      console.log("Box : " + boxs);
+      console.log("Box : " + this.box + " ID : " + this.box.uniqueId);
     }
 
-    ground() {
-      // Our built-in 'ground' shape.
-      const gd = MeshBuilder.CreateGround(
-        "ground",
-        { width: 6, height: 6 },
-        this.scene
-      );
-      console.log("ground : " + gd);
+    setPosition(
+      x = this.box.position.x,
+      y = this.box.position.y,
+      z = this.box.position.z
+    ) {
+      this.box.position.x = x;
+      this.box.position.y = y;
+      this.box.position.z = z;
     }
 
-    sphere() {
-      const keyPress = {
-        w: false,
-        a: false,
-        s: false,
-        d: false,
-      };
-      const initialSpeed = 0;
-      const desiredSpeed = 0.01;
-      const acceleration = 0.0001;
-      const deceleration = 0.001;
+    getPosition() {
+      return this.box.position;
+    }
 
-      let currentSpeed = initialSpeed;
+    setScaling(
+      x = this.box.scaling.x,
+      y = this.box.scaling.y,
+      z = this.box.scaling.z
+    ) {
+      this.box.scaling.x = x;
+      this.box.scaling.y = y;
+      this.box.scaling.z = z;
+    }
 
-      // Set up easing function
-      const lerp = (start, end, t) => {
-        return start * (1 - t) + end * t;
-      };
+    getScaling() {
+      return this.box.scaling;
+    }
 
-      var sphere = MeshBuilder.CreateSphere(
+    setRotation(
+      x = this.box.rotation.x,
+      y = this.box.rotation.y,
+      z = this.box.rotation.z
+    ) {
+      this.box.rotation.x = x;
+      this.box.rotation.y = y;
+      this.box.rotation.z = z;
+    }
+    getRotation() {
+      return this.box.rotation;
+    }
+
+    getUniqueId() {
+      return this.box.uniqueId;
+    }
+    getParentId() {
+      const parent = this.box.parent;
+      if (parent == null) {
+        return 0;
+      }
+      return parent.uniqueId;
+    }
+
+    getName() {
+      return this.box.name;
+    }
+  }
+
+  class Sphere extends BabylonInstanceEngine {
+    constructor(scene) {
+      super(scene);
+      this.sphere = MeshBuilder.CreateSphere(
         "sphere",
         { diameter: 2, segments: 32 },
         this.scene
       );
 
-      // Move the sphere upward 1/2 its height
-      sphere.position.y = 1;
-      this.scene.onKeyboardObservable.add((kbInfo) => {
-        switch (kbInfo.type) {
-          case KeyboardEventTypes.KEYDOWN:
-            switch (kbInfo.event.key) {
-              case "a":
-              case "A":
-                keyPress["a"] = true;
-                break;
-              case "d":
-              case "D":
-                keyPress["d"] = true;
-                break;
-              case "w":
-              case "W":
-                keyPress["w"] = true;
-                break;
-              case "s":
-              case "S":
-                keyPress["s"] = true;
-                break;
-            }
-            break;
-          case KeyboardEventTypes.KEYUP:
-            switch (kbInfo.event.key) {
-              case "a":
-              case "A":
-                keyPress["a"] = false;
-                break;
-              case "d":
-              case "D":
-                keyPress["d"] = false;
-                break;
-              case "w":
-              case "W":
-                keyPress["w"] = false;
-                break;
-              case "s":
-              case "S":
-                keyPress["s"] = false;
-                break;
-            }
-            break;
-        }
-      });
+      console.log("Sphere : " + this.sphere);
+    }
+    setPosition(
+      x = this.sphere.position.x,
+      y = this.sphere.position.y,
+      z = this.sphere.position.z
+    ) {
+      this.sphere.position.x = x;
+      this.sphere.position.y = y;
+      this.sphere.position.z = z;
+    }
 
-      this.scene.registerBeforeRender(() => {
-        if (keyPress["w"] || keyPress["a"] || keyPress["s"] || keyPress["d"]) {
-          if (currentSpeed < desiredSpeed) {
-            currentSpeed = Math.min(currentSpeed + acceleration, desiredSpeed);
-          }
-        } else {
-          if (currentSpeed > 0) {
-            currentSpeed = Math.max(currentSpeed - deceleration, 0);
-          }
-        }
-        const sign = Math.sign(this.camera.alpha);
-        let movement = new Vector3(0, 0, 0);
-        if (keyPress["w"]) {
-          const angle =
-            -this.camera.alpha + (sign === -1 ? Math.PI / 2 : -Math.PI / 2);
-          movement = new Vector3(Math.sin(angle), 0, Math.cos(angle));
-        }
-        if (keyPress["a"]) {
-          const angle = this.camera.alpha + (sign === 1 ? -Math.PI : Math.PI);
-          movement = new Vector3(-Math.sin(angle), 0, -Math.cos(angle));
-        }
-        if (keyPress["d"]) {
-          const angle = this.camera.alpha + (sign === 1 ? -Math.PI : Math.PI);
-          movement = new Vector3(Math.sin(angle), 0, Math.cos(angle));
-        }
-        if (keyPress["s"]) {
-          const angle =
-            -this.camera.alpha + (sign === -1 ? Math.PI / 2 : -Math.PI / 2);
-          movement = new Vector3(-Math.sin(angle), 0, -Math.cos(angle));
-        }
+    getPosition() {
+      return this.sphere.position;
+    }
 
-        movement.normalize();
-        const scaledSpeed =
-          currentSpeed * this.scene.getEngine().getDeltaTime();
-        movement.scaleInPlace(scaledSpeed);
-        sphere.position.addInPlace(movement);
-      });
-      alert("Use W,A,S,D to move the ball");
-      this.run();
+    setScaling(
+      x = this.sphere.scaling.x,
+      y = this.sphere.scaling.y,
+      z = this.sphere.scaling.z
+    ) {
+      this.sphere.scaling.x = x;
+      this.sphere.scaling.y = y;
+      this.sphere.scaling.z = z;
+    }
+
+    getScaling() {
+      return this.sphere.scaling;
+    }
+
+    setRotation(
+      x = this.sphere.rotation.x,
+      y = this.sphere.rotation.y,
+      z = this.sphere.rotation.z
+    ) {
+      this.sphere.rotation.x = x;
+      this.sphere.rotation.y = y;
+      this.sphere.rotation.z = z;
+    }
+    getRotation() {
+      return this.sphere.rotation;
+    }
+    getUniqueId() {
+      return this.sphere.uniqueId;
+    }
+    getParentId() {
+      const parent = this.sphere.parent;
+      if (parent == null) {
+        return 0;
+      }
+      return parent.uniqueId;
+    }
+    getName() {
+      return this.sphere.name;
     }
   }
+
+  class Ground extends BabylonInstanceEngine {
+    constructor(scene) {
+      super(scene);
+      this.ground = MeshBuilder.CreateGround(
+        "ground",
+        { width: 6, height: 6 },
+        this.scene
+      );
+
+      console.log("Ground : " + this.ground + " ID : " + this.ground.uniqueId);
+    }
+
+    generalInfo() {
+      const id = this.ground.id;
+      const name = this.ground.name;
+      const uniqueID = this.ground.uniqueId;
+      const _class = this.ground.getClassName;
+      const vertices = this.ground.vertices;
+      const faces = this.ground.face;
+    }
+
+    setPosition(
+      x = this.ground.position.x,
+      y = this.ground.position.y,
+      z = this.ground.position.z
+    ) {
+      this.ground.position.x = x;
+      this.ground.position.y = y;
+      this.ground.position.z = z;
+    }
+
+    getPosition() {
+      return this.ground.position;
+    }
+
+    setScaling(
+      x = this.ground.scaling.x,
+      y = this.ground.scaling.y,
+      z = this.ground.scaling.z
+    ) {
+      this.ground.scaling.x = x;
+      this.ground.scaling.y = y;
+      this.ground.scaling.z = z;
+    }
+
+    getScaling() {
+      return this.ground.scaling;
+    }
+
+    setRotation(
+      x = this.ground.rotation.x,
+      y = this.ground.rotation.y,
+      z = this.ground.rotation.z
+    ) {
+      this.ground.rotation.x = x;
+      this.ground.rotation.y = y;
+      this.ground.rotation.z = z;
+    }
+    getRotation() {
+      return this.ground.rotation;
+    }
+    getUniqueId() {
+      return this.ground.uniqueId;
+    }
+    getParentId() {
+      const parent = this.ground.parent;
+      if (parent == null) {
+        return 0;
+      }
+      return parent.uniqueId;
+    }
+    getName() {
+      return this.ground.name;
+    }
+  }
+
+  class Cylinder extends BabylonInstanceEngine {
+    constructor(scene) {
+      super(scene);
+      this.cylinder = MeshBuilder.CreateCylinder("cylinder", {});
+
+      console.log("Cylinder : " + this.cylinder);
+    }
+    setPosition(
+      x = this.cylinder.position.x,
+      y = this.cylinder.position.y,
+      z = this.cylinder.position.z
+    ) {
+      this.cylinder.position.x = x;
+      this.cylinder.position.y = y;
+      this.cylinder.position.z = z;
+    }
+
+    getPosition() {
+      return this.cylinder.position;
+    }
+
+    setScaling(
+      x = this.cylinder.scaling.x,
+      y = this.cylinder.scaling.y,
+      z = this.cylinder.scaling.z
+    ) {
+      this.cylinder.scaling.x = x;
+      this.cylinder.scaling.y = y;
+      this.cylinder.scaling.z = z;
+    }
+
+    getScaling() {
+      return this.cylinder.scaling;
+    }
+
+    setRotation(
+      x = this.cylinder.rotation.x,
+      y = this.cylinder.rotation.y,
+      z = this.cylinder.rotation.z
+    ) {
+      this.cylinder.rotation.x = x;
+      this.cylinder.rotation.y = y;
+      this.cylinder.rotation.z = z;
+    }
+    getRotation() {
+      return this.cylinder.rotation;
+    }
+    getUniqueId() {
+      return this.cylinder.uniqueId;
+    }
+    getParentId() {
+      const parent = this.cylinder.parent;
+      if (parent == null) {
+        return 0;
+      }
+      return parent.uniqueId;
+    }
+    getName() {
+      return this.cylinder.name;
+    }
+  }
+
+  class Cone extends BabylonInstanceEngine {
+    constructor(scene) {
+      super(scene);
+      this.cone = MeshBuilder.CreateCylinder("cylinder", { diameterTop: 0 });
+
+      console.log("Cone : " + this.cone);
+    }
+    getUniqueId() {
+      return this.cone.uniqueId;
+    }
+    getParentId() {
+      const parent = this.cone.parent;
+      if (parent == null) {
+        return 0;
+      }
+      return parent.uniqueId;
+    }
+    getName() {
+      return this.cone.name;
+    }
+  }
+
+  class HemisphericLights extends BabylonInstanceEngine {
+    constructor(scene) {
+      super(scene);
+      this.hemisphericLight = new HemisphericLight(
+        "hemisphericLight",
+        new Vector3(0, 1, 0),
+        this.scene
+      );
+    }
+
+    setDirection(x, y, z) {
+      this.hemisphericLight.direction = new Vector3(x, y, z);
+    }
+
+    setIntensity(intensity) {
+      this.hemisphericLight.intensity = intensity;
+    }
+    setDiffuse(r, g, b) {
+      this.hemisphericLight.diffuse = new Color3(r, g, b);
+    }
+    setGroundColor(r, g, b) {
+      this.hemisphericLight.groundColor = new Color3(r, g, b);
+    }
+    setSpecular(r, g, b) {
+      this.hemisphericLight.specular = new Color3(r, g, b);
+    }
+
+    getIntensity() {
+      return this.hemisphericLight.intensity;
+    }
+
+    getProperties() {
+      const data = {
+        id: this.hemisphericLight.id,
+        name: this.hemisphericLight.name,
+        uniqueId: this.hemisphericLight.uniqueId,
+        class: this.hemisphericLight.getClassName,
+        parent: this.hemisphericLight.parent,
+      };
+      return data;
+    }
+    getDiffuse() {
+      return this.hemisphericLight.diffuse;
+    }
+    getGroundColor() {
+      return this.hemisphericLight.groundColor;
+    }
+    getSpecular() {
+      return this.hemisphericLight.specular;
+    }
+
+    getDirection() {
+      return this.hemisphericLight.direction;
+    }
+  }
+
   const babylonInstanceEngine = new BabylonInstanceEngine();
 
   return (
-    <BabylonContext.Provider value={{ babylonInstanceEngine }}>
+    <BabylonContext.Provider
+      value={{
+        babylonInstanceEngine,
+        allMesh,
+        setAllMesh,
+        Box,
+        Sphere,
+        Ground,
+        Cylinder,
+        Cone,
+        HemisphericLights,
+      }}
+    >
       {children}
     </BabylonContext.Provider>
   );
