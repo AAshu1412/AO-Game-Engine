@@ -55,9 +55,10 @@ function InstanceBox() {
           <button
             className="border-2 border-[#2cead7] w-full sm:w-40 lg:w-52 p-2 sm:p-3 hover:bg-red-500 active:bg-red-700 transition duration-300"
             onClick={() => {
-              const scene = babylonInstanceEngine.returnScene();
-              const sphere = new Sphere(scene);
-              setAllMesh((prevMesh) => [...prevMesh, sphere]);
+              // const scene = babylonInstanceEngine.returnScene();
+              // const sphere = new Sphere(scene);
+              // setAllMesh((prevMesh) => [...prevMesh, sphere]);
+              babylonInstanceEngine.sphere()
             }}
           >
             Sphere
