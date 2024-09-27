@@ -1,5 +1,10 @@
 import { useBabylon } from "@/babylon/useBabylon";
 import { TreeViewComponent } from "@syncfusion/ej2-react-navigations";
+import {
+ 
+  MeshBuilder,
+  
+} from "@babylonjs/core";
 
 function InstanceBox() {
   const {
@@ -23,7 +28,11 @@ function InstanceBox() {
             className="border-2 border-[#2cead7] w-full sm:w-40 lg:w-52 p-2 sm:p-3 hover:bg-red-500 active:bg-red-700 transition duration-300"
             onClick={() => {
               const scene = babylonInstanceEngine.returnScene();
-              const ground = new Ground(scene);
+              const ground = MeshBuilder.CreateGround(
+                "ground",
+                { width: 6, height: 6 },
+                scene
+              );
               setAllMesh((prevMesh) => [...prevMesh, ground]);
             }}
           >

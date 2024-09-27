@@ -15,8 +15,14 @@ import {
   GizmoManager,
   PositionGizmo,
   Color3,
+  RotationGizmo,
+  Axis,
+  Space,
   DirectionalLight,
 } from "@babylonjs/core";
+import * as BABYLON from "@babylonjs/core";
+import "@babylonjs/inspector";
+
 import { parse, stringify, toJSON, fromJSON } from "flatted";
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -119,7 +125,7 @@ export const BabylonProvider = ({ children }) => {
       ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
       //  const utilLayer= new UtilityLayerRenderer(this.scene);
       //   var gizmo_scale = new PositionGizmo(utilLayer);
-      //     var gizmo_rational = new BABYLON.RotationGizmo(utilLayer);
+      //     var gizmo_rational = new RotationGizmo(utilLayer);
 
       //     gizmo_scale.attachedMesh = customLight;
       //     gizmo_rational.attachedMesh = customLight;
@@ -149,12 +155,16 @@ export const BabylonProvider = ({ children }) => {
     }
 
     debu() {
-      console.log("aaa--");
-
-      new DebugLayer(this.scene).show({
+      this.scene.debugLayer.show({
         embedMode: true,
         gizmoCamera: this.camera,
       });
+
+      // new DebugLayer(this.scene).show({
+      //   embedMode: true,
+      //   gizmoCamera: this.camera,
+      // });
+      console.log("aaa--");
     }
 
     resize() {
@@ -165,10 +175,10 @@ export const BabylonProvider = ({ children }) => {
 
     gizmo() {
       var utilLayer = new UtilityLayerRenderer(this.scene);
-      var translationGizmo = new BABYLON.PositionGizmo(utilLayer);
+      var translationGizmo = new PositionGizmo(utilLayer);
       translationGizmo.updateGizmoRotationToMatchAttachedMesh = false;
 
-      var rotationGizmo = new BABYLON.RotationGizmo(utilLayer);
+      var rotationGizmo = new RotationGizmo(utilLayer);
       // rotationGizmo.updateGizmoRotationToMatchAttachedMesh = false;
 
       var objClick = [];
@@ -206,11 +216,7 @@ export const BabylonProvider = ({ children }) => {
           .filter((mesh) => mesh != rotationGizmo.attachedMesh)
           .forEach((mesh) => {
             // mesh.rotation.x += rotationGizmo.xGizmo.angle;
-            mesh.rotate(
-              BABYLON.Axis.X,
-              rotationGizmo.xGizmo.angle,
-              BABYLON.Space.LOCAL
-            );
+            mesh.rotate(Axis.X, rotationGizmo.xGizmo.angle, Space.LOCAL);
           });
         rotationGizmo.xGizmo.angle = 0;
       });
@@ -221,11 +227,7 @@ export const BabylonProvider = ({ children }) => {
           .filter((mesh) => mesh != rotationGizmo.attachedMesh)
           .forEach((mesh) => {
             // mesh.rotation.y += rotationGizmo.yGizmo.angle;
-            mesh.rotate(
-              BABYLON.Axis.Y,
-              rotationGizmo.yGizmo.angle,
-              BABYLON.Space.LOCAL
-            );
+            mesh.rotate(Axis.Y, rotationGizmo.yGizmo.angle, Space.LOCAL);
           });
         rotationGizmo.yGizmo.angle = 0;
       });
@@ -236,11 +238,7 @@ export const BabylonProvider = ({ children }) => {
           .filter((mesh) => mesh != rotationGizmo.attachedMesh)
           .forEach((mesh) => {
             // mesh.rotation.z += rotationGizmo.zGizmo.angle;
-            mesh.rotate(
-              BABYLON.Axis.Z,
-              rotationGizmo.zGizmo.angle,
-              BABYLON.Space.LOCAL
-            );
+            mesh.rotate(Axis.Z, rotationGizmo.zGizmo.angle, Space.LOCAL);
           });
         rotationGizmo.zGizmo.angle = 0;
       });
@@ -268,6 +266,173 @@ export const BabylonProvider = ({ children }) => {
           }
         }
       });
+    }
+
+    box(y_pos) {
+      console.log("Starting box function with y_pos: " + y_pos); // Add this log to check if function is called
+
+      // Our built-in 'box' shape.
+      try {
+        this.boxs = MeshBuilder.CreateBox(
+          "box",
+          { size: 2, updatable: true },
+          this.scene
+        );
+
+        console.log("Box created, setting position..."); // Check if box creation succeeds
+        if (isNaN(y_pos)) {
+          console.error("y_pos is not a valid number: ", y_pos);
+        }
+        // Move the box upward 1/2 its height
+        this.boxs.position.y = y_pos;
+        this.scene.render();
+
+        console.log("Position set to y_pos: " + this.boxs.position.y); // This should now show the updated y position
+        // console.log("dadw : "+  this.boxs._getData({})); // Check if execution reaches this point
+
+        //   var gizmo_scale = new ScaleGizmo(this.utilLayer);
+        //   var gizmo_rational = new BABYLON.RotationGizmo(this.utilLayer);
+
+        //   gizmo_scale.attachedMesh = boxs;
+        //   gizmo_rational.attachedMesh = boxs;
+
+        //   // Keep the gizmo fixed to local rotation
+        //   gizmo_scale.updateGizmoRotationToMatchAttachedMesh = true;
+        //   gizmo_scale.updateGizmoPositionToMatchAttachedMesh = true;
+        //   gizmo_rational.updateGizmoRotationToMatchAttachedMesh = false;
+        //   gizmo_rational.updateGizmoPositionToMatchAttachedMesh = true;
+
+        console.log("Box : " + this.boxs); // Final log to show the box object
+      } catch (error) {
+        console.error("An error occurred: ", error); // Log any errors that might occur
+      }
+    }
+
+    getPosition() {
+      console.log("Position set to y_pos: " + this.boxs.position);
+    }
+
+    ground() {
+      // Our built-in 'ground' shape.
+      const gd = MeshBuilder.CreateGround(
+        "ground",
+        { width: 6, height: 6 },
+        this.scene
+      );
+      console.log("ground : " + gd);
+    }
+
+    sphere() {
+      const keyPress = {
+        w: false,
+        a: false,
+        s: false,
+        d: false,
+      };
+      const initialSpeed = 0;
+      const desiredSpeed = 0.01;
+      const acceleration = 0.0001;
+      const deceleration = 0.001;
+
+      let currentSpeed = initialSpeed;
+
+      // Set up easing function
+      const lerp = (start, end, t) => {
+        return start * (1 - t) + end * t;
+      };
+
+      var sphere = MeshBuilder.CreateSphere(
+        "sphere",
+        { diameter: 2, segments: 32 },
+        this.scene
+      );
+
+      // Move the sphere upward 1/2 its height
+      sphere.position.y = 1;
+      this.scene.onKeyboardObservable.add((kbInfo) => {
+        switch (kbInfo.type) {
+          case KeyboardEventTypes.KEYDOWN:
+            switch (kbInfo.event.key) {
+              case "a":
+              case "A":
+                keyPress["a"] = true;
+                break;
+              case "d":
+              case "D":
+                keyPress["d"] = true;
+                break;
+              case "w":
+              case "W":
+                keyPress["w"] = true;
+                break;
+              case "s":
+              case "S":
+                keyPress["s"] = true;
+                break;
+            }
+            break;
+          case KeyboardEventTypes.KEYUP:
+            switch (kbInfo.event.key) {
+              case "a":
+              case "A":
+                keyPress["a"] = false;
+                break;
+              case "d":
+              case "D":
+                keyPress["d"] = false;
+                break;
+              case "w":
+              case "W":
+                keyPress["w"] = false;
+                break;
+              case "s":
+              case "S":
+                keyPress["s"] = false;
+                break;
+            }
+            break;
+        }
+      });
+
+      this.scene.registerBeforeRender(() => {
+        if (keyPress["w"] || keyPress["a"] || keyPress["s"] || keyPress["d"]) {
+          if (currentSpeed < desiredSpeed) {
+            currentSpeed = Math.min(currentSpeed + acceleration, desiredSpeed);
+          }
+        } else {
+          if (currentSpeed > 0) {
+            currentSpeed = Math.max(currentSpeed - deceleration, 0);
+          }
+        }
+        const sign = Math.sign(this.camera.alpha);
+        let movement = new Vector3(0, 0, 0);
+        if (keyPress["w"]) {
+          const angle =
+            -this.camera.alpha + (sign === -1 ? Math.PI / 2 : -Math.PI / 2);
+          movement = new Vector3(Math.sin(angle), 0, Math.cos(angle));
+        }
+        if (keyPress["a"]) {
+          const angle = this.camera.alpha + (sign === 1 ? -Math.PI : Math.PI);
+          movement = new Vector3(-Math.sin(angle), 0, -Math.cos(angle));
+        }
+        if (keyPress["d"]) {
+          const angle = this.camera.alpha + (sign === 1 ? -Math.PI : Math.PI);
+          movement = new Vector3(Math.sin(angle), 0, Math.cos(angle));
+        }
+        if (keyPress["s"]) {
+          const angle =
+            -this.camera.alpha + (sign === -1 ? Math.PI / 2 : -Math.PI / 2);
+          movement = new Vector3(-Math.sin(angle), 0, -Math.cos(angle));
+        }
+
+        movement.normalize();
+        const scaledSpeed =
+          currentSpeed * this.scene.getEngine().getDeltaTime();
+        movement.scaleInPlace(scaledSpeed);
+        sphere.position.addInPlace(movement);
+      });
+      alert("Use W,A,S,D to move the ball");
+      this.run();
     }
   }
 
@@ -414,8 +579,8 @@ export const BabylonProvider = ({ children }) => {
         { width: 6, height: 6 },
         this.scene
       );
-
-      console.log("Ground : " + this.ground + " ID : " + this.ground.uniqueId);
+      
+      console.log("Ground : " + this.ground + " ID : " + this.ground.position);
     }
 
     generalInfo() {
@@ -423,7 +588,7 @@ export const BabylonProvider = ({ children }) => {
       const name = this.ground.name;
       const uniqueID = this.ground.uniqueId;
       const _class = this.ground.getClassName;
-      const vertices = this.ground.vertices;
+      const vertices = this.ground.isE;
       const faces = this.ground.face;
     }
 

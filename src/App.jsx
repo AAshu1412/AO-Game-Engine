@@ -59,7 +59,7 @@ function App() {
       <div className="flex flex-row">
         {/* <SideTools /> */}
         <InstanceBox />
-        <CustomBuilder />
+        {/* <CustomBuilder /> */}
         <SceneBox />
         {/* <Properties/> */}
       </div>

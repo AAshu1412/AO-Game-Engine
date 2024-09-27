@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { useBabylon } from "@/babylon/useBabylon";
+import { useBabylon } from "../babylon/useBabylon";
 
 function SceneBox() {
   const { babylonInstanceEngine } = useBabylon();
@@ -25,7 +25,7 @@ function SceneBox() {
   }, []);
 
   return (
-    <div className="w-[72%] h-screen bg-black border-[#2cead7] border-2 ">
+    <div className="w-[87%] h-screen bg-black border-[#2cead7] border-2 ">
       <div className="flex flex-row justify-between px-10">
         <h1 className="font-medium text-white">SceneBox</h1>
         <button
