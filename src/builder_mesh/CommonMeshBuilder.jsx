@@ -2,112 +2,124 @@ import { useBabylon } from "@/babylon/useBabylon";
 import { useEffect, useState } from "react";
 import { Vector3 } from "@babylonjs/core";
 
-function GroundBuilder({ index }) {
-  const [groundObject, setGroundObject] = useState();
-  const [groundGeneralProperty, setGroundGeneralProperty] = useState([]);
-  const [groundTransformationsProperty, setGroundTransformationsProperty] =
+function CommonMeshBuilder({ index }) {
+  const [commonObject, setCommonObject] = useState();
+  const [commonGeneralProperty, setCommonGeneralProperty] = useState([]);
+  const [commonTransformationsProperty, setCommonTransformationsProperty] =
     useState([]);
-  const [groundDisplayProperty, setGroundDisplayProperty] = useState([]);
-  const { allMesh, setAllMesh } = useBabylon();
+  const [commonDisplayProperty, setCommonDisplayProperty] = useState([]);
+  const { allMesh, setAllMesh, gizmoUpdate } = useBabylon();
+
+  useEffect(()=>{
+    if (index !== null && index !== undefined && allMesh[index]) {
+        const CommonObject = allMesh[index];
+    const commonTransformerData = [
+        { name: "Position", property: CommonObject.position, editable: true },
+        { name: "Rotation", property: CommonObject.rotation, editable: true },
+        { name: "Scaling", property: CommonObject.scaling, editable: true },
+      ];
+      setCommonTransformationsProperty(commonTransformerData);
+    }
+  },[gizmoUpdate]);
 
   useEffect(() => {
     if (index !== null && index !== undefined && allMesh[index]) {
-      const GroundObject = allMesh[index];
-      setGroundObject(GroundObject);
-      const groundGeneralData = [
-        { name: "ID", property: GroundObject.id, editable: false },
-        { name: "Name", property: GroundObject.name, editable: true },
-        { name: "Unique ID", property: GroundObject.uniqueId, editable: false },
+      const CommonObject = allMesh[index];
+      setCommonObject(CommonObject);
+      const commonGeneralData = [
+        { name: "ID", property: CommonObject.id, editable: false },
+        { name: "Name", property: CommonObject.name, editable: true },
+        { name: "Unique ID", property: CommonObject.uniqueId, editable: false },
         {
           name: "Class",
-          property: GroundObject.getClassName(),
+          property: CommonObject.getClassName(),
           editable: false,
         },
         {
           name: "Vertices",
-          property: GroundObject.getTotalVertices(),
+          property: CommonObject.getTotalVertices(),
           editable: false,
         },
-        { name: "Faces", property: GroundObject.face, editable: false },
+        { name: "Faces", property: CommonObject.face, editable: false },
         {
           name: "Sub-meshes",
-          property: GroundObject.subMeshes.length,
+          property: CommonObject.subMeshes.length,
           editable: false,
         },
         {
           name: "Parent",
-          property: GroundObject.parent ? GroundObject.parent.name : "None",
+          property: CommonObject.parent ? CommonObject.parent.name : "None",
           editable: false,
         },
         {
           name: "Is enabled",
-          property: GroundObject.isEnabled(),
+          property: CommonObject.isEnabled(),
           editable: true,
         },
         {
           name: "Is pickable",
-          property: GroundObject.isPickable,
+          property: CommonObject.isPickable,
           editable: true,
         },
         {
           name: "Active Material",
-          property: GroundObject.material
-            ? GroundObject.material.getActiveTextures().length
+          property: CommonObject.material
+            ? CommonObject.material.getActiveTextures().length
             : "None",
           editable: false,
         },
       ];
 
-      const groundTransformerData = [
-        { name: "Position", property: GroundObject.position, editable: true },
-        { name: "Rotation", property: GroundObject.rotation, editable: true },
-        { name: "Scaling", property: GroundObject.scaling, editable: true },
+      const commonTransformerData = [
+        { name: "Position", property: CommonObject.position, editable: true },
+        { name: "Rotation", property: CommonObject.rotation, editable: true },
+        { name: "Scaling", property: CommonObject.scaling, editable: true },
       ];
 
-      const groundDisplayData = [
+      const commonDisplayData = [
         {
           name: "Visibility",
-          property: GroundObject.visibility,
+          property: CommonObject.visibility,
           editable: true,
         },
         {
           name: "Orientation",
-          property: GroundObject.sideOrientation,
+          property: CommonObject.sideOrientation,
           editable: true,
         },
         {
           name: "Alpha Index",
-          property: GroundObject.alphaIndex,
+          property: CommonObject.alphaIndex,
           editable: true,
         },
         {
           name: "Receive Shadows",
-          property: GroundObject.receiveShadows,
+          property: CommonObject.receiveShadows,
           editable: true,
         },
         {
           name: "Infinite Distance",
-          property: GroundObject.infiniteDistance,
+          property: CommonObject.infiniteDistance,
           editable: true,
         },
         {
           name: "Rendering Group ID",
-          property: GroundObject.renderingGroupId,
+          property: CommonObject.renderingGroupId,
           editable: true,
         },
         {
           name: "Layer Mask",
-          property: GroundObject.layerMask,
+          property: CommonObject.layerMask,
           editable: true,
         },
       ];
 
-      setGroundGeneralProperty(groundGeneralData);
-      setGroundTransformationsProperty(groundTransformerData);
-      setGroundDisplayProperty(groundDisplayData);
-      // console.log(GroundObject.name+"------")
+      setCommonGeneralProperty(commonGeneralData);
+      setCommonTransformationsProperty(commonTransformerData);
+      setCommonDisplayProperty(commonDisplayData);
+      // console.log(CommonObject.name+"------")
     } else {
-      setGroundObject(undefined);
+      setCommonObject(undefined);
     }
   }, [index, allMesh, setAllMesh]);
 
@@ -115,63 +127,19 @@ function GroundBuilder({ index }) {
     console.log(name, value);
     setAllMesh((prevAllMesh) => {
       const mesh = [...prevAllMesh];
+
       if (name === "Name") mesh[index].name = value;
       if (name === "Is enabled") mesh[index].setEnabled(value);
       if (name === "Is pickable") mesh[index].isPickable = value;
-      if (name === "Position-PX")
-        mesh[index].position = new Vector3(
-          value,
-          mesh[index].position._y,
-          mesh[index].position._z
-        );
-      if (name === "Position-PY")
-        mesh[index].position = new Vector3(
-          mesh[index].position._x,
-          value,
-          mesh[index].position._z
-        );
-      if (name === "Position-PZ")
-        mesh[index].position = new Vector3(
-          mesh[index].position._x,
-          mesh[index].position._y,
-          value
-        );
-      if (name === "Rotation-RX")
-        mesh[index].rotation = new Vector3(
-          value,
-          mesh[index].rotation._y,
-          mesh[index].rotation._z
-        );
-      if (name === "Rotation-RY")
-        mesh[index].rotation = new Vector3(
-          mesh[index].rotation._x,
-          value,
-          mesh[index].rotation._z
-        );
-      if (name === "Rotation-RZ")
-        mesh[index].rotation = new Vector3(
-          mesh[index].rotation._x,
-          mesh[index].rotation._y,
-          value
-        );
-      if (name === "Scaling-SX")
-        mesh[index].scaling = new Vector3(
-          value,
-          mesh[index].scaling._y,
-          mesh[index].scaling._z
-        );
-      if (name === "Scaling-SY")
-        mesh[index].scaling = new Vector3(
-          mesh[index].scaling._x,
-          value,
-          mesh[index].scaling._z
-        );
-      if (name === "Scaling-SZ")
-        mesh[index].scaling = new Vector3(
-          mesh[index].scaling._x,
-          mesh[index].scaling._y,
-          value
-        );
+      if (name === "Position-PX") mesh[index].position = new Vector3(value,mesh[index].position._y,mesh[index].position._z);
+      if (name === "Position-PY") mesh[index].position = new Vector3(mesh[index].position._x,value,mesh[index].position._z);
+      if (name === "Position-PZ") mesh[index].position = new Vector3(mesh[index].position._x,mesh[index].position._y,value);
+      if (name === "Rotation-RX") mesh[index].rotation = new Vector3(value,mesh[index].rotation._y,mesh[index].rotation._z);
+      if (name === "Rotation-RY") mesh[index].rotation = new Vector3(mesh[index].rotation._x,value,mesh[index].rotation._z);
+      if (name === "Rotation-RZ") mesh[index].rotation = new Vector3(mesh[index].rotation._x,mesh[index].rotation._y,value);
+      if (name === "Scaling-SX") mesh[index].scaling = new Vector3(value,mesh[index].scaling._y,mesh[index].scaling._z);
+      if (name === "Scaling-SY") mesh[index].scaling = new Vector3(mesh[index].scaling._x,value,mesh[index].scaling._z);
+      if (name === "Scaling-SZ") mesh[index].scaling = new Vector3(mesh[index].scaling._x,mesh[index].scaling._y,value);
       if (name === "Visibility") mesh[index].visibility = value;
       if (name === "Orientation") mesh[index].sideOrientation = value;
       if (name === "Alpha Index") mesh[index].alphaIndex = value;
@@ -186,7 +154,7 @@ function GroundBuilder({ index }) {
 
   return (
     <>
-      {groundObject ? (
+      {commonObject ? (
         <div className="w-full flex flex-col text-white h-[70vh] overflow-y-scroll">
           <div className="flex flex-col">
             <div className="flex flex-col">
@@ -194,7 +162,7 @@ function GroundBuilder({ index }) {
                 <h1 className="font-bold text-md">GENERAL</h1>
               </div>
               <div className="flex flex-col">
-                {groundGeneralProperty.map((val, key) => {
+                {commonGeneralProperty.map((val, key) => {
                   return (
                     <div
                       key={key}
@@ -241,7 +209,7 @@ function GroundBuilder({ index }) {
                 <h1 className="font-bold text-md">TRANSFORMS</h1>
               </div>
               <div className="flex flex-col">
-                {groundTransformationsProperty.map((val, key) => {
+                {commonTransformationsProperty.map((val, key) => {
                   return (
                     <div
                       key={key}
@@ -289,7 +257,7 @@ function GroundBuilder({ index }) {
                           <div className="flex flex-col gap-2">
                             <input
                               type="number"
-                              value={val.property._x}
+                              value={val.property._x * 57.2958}
                               onChange={(e) =>
                                 handleInputChange(
                                   `${val.name}-RX`,
@@ -300,7 +268,7 @@ function GroundBuilder({ index }) {
                             />
                             <input
                               type="number"
-                              value={val.property._y}
+                              value={val.property._y * 57.2958}
                               onChange={(e) =>
                                 handleInputChange(
                                   `${val.name}-RY`,
@@ -311,7 +279,7 @@ function GroundBuilder({ index }) {
                             />
                             <input
                               type="number"
-                              value={val.property._z}
+                              value={val.property._z * 57.2958}
                               onChange={(e) =>
                                 handleInputChange(
                                   `${val.name}-RZ`,
@@ -371,7 +339,7 @@ function GroundBuilder({ index }) {
                 <h1 className="font-bold text-md">DISPLAY</h1>
               </div>
               <div className="flex flex-col">
-                {groundDisplayProperty.map((val, key) => {
+                {commonDisplayProperty.map((val, key) => {
                   return (
                     <div
                       key={key}
@@ -470,4 +438,4 @@ function GroundBuilder({ index }) {
   );
 }
 
-export default GroundBuilder;
+export default CommonMeshBuilder;

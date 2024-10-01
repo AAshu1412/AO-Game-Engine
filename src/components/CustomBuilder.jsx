@@ -5,7 +5,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "./ui/resizable";
-import GroundBuilder from "../builder_mesh/GroundBuilder";
+import CommonMeshBuilder from "../builder_mesh/CommonMeshBuilder";
 
 function CustomBuilder() {
   const { allMesh } = useBabylon();
@@ -94,7 +94,7 @@ function CustomBuilder() {
       >
         {node.children.length > 0 && (
           <span className="mr-2" onClick={() => toggleNode(node)}>
-            {node.isOpen ? <p className="text-sm font-bold">{"—"}</p>: <p className="text-2xl font-bold">{"+"}</p>}
+            {node.isOpen ? <p className="text-2xl font-bold">{"⏷"}</p>: <p className="text-2xl font-bold">{"⏵"}</p>}
           </span>
         )}
         {node.name}
@@ -104,7 +104,7 @@ function CustomBuilder() {
       )}
     </div>
   );
-  console.log(JSON.stringify(treeViewData));
+  // console.log(JSON.stringify(treeViewData));
   return (
     <div className="w-[15%] bg-[#333333] border-2 border-red-600">
       <ResizablePanelGroup direction="vertical">
@@ -120,7 +120,7 @@ function CustomBuilder() {
         <ResizablePanel defaultSize={75}>
           <div className="flex flex-col overflow-auto">
             <span className=" text-white">Resizable Panel</span>
-            <GroundBuilder index={saveIndex} />
+            <CommonMeshBuilder index={saveIndex} />
           </div>
         </ResizablePanel>
       </ResizablePanelGroup>

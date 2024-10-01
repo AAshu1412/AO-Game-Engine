@@ -28,12 +28,29 @@ import { parse, stringify, toJSON, fromJSON } from "flatted";
 /////////////////////////////////////////////////////////////////////////////////
 export const BabylonContext = createContext();
 /////////////////////////////////////////////////////////////////////////////////
+function stringify12(obj) {
+  let cache = [];
+  let str = JSON.stringify(obj, function (key, value) {
+    if (typeof value === "object" && value !== null) {
+      if (cache.indexOf(value) !== -1) {
+        // Circular reference found, discard key
+        return;
+      }
+      // Store value in our collection
+      cache.push(value);
+    }
+    return value;
+  });
+  cache = null; // reset the cache
+  return str;
+}
 
 /////////////////////////////////////////////////////////////////////////////////
 // Provider -----------------------
 
 export const BabylonProvider = ({ children }) => {
   const [allMesh, setAllMesh] = useState([]);
+  const [gizmoUpdate, setGizmoUpdate] = useState([]);
 
   class BabylonInstanceEngine {
     reactCanvas = null;
@@ -96,7 +113,7 @@ export const BabylonProvider = ({ children }) => {
         light.groundColor = new Color3(0, 0, 1);
         light.specular = new Color3(0, 1, 0);
         this.llightGizmo(light);
-        console.log("Scene is working");
+        console.log("Scene is working: " + stringify12(this.scene));
         // new DebugLayer(this.scene).show({embedMode:true})
         // this.run();
       } else {
@@ -155,16 +172,25 @@ export const BabylonProvider = ({ children }) => {
     }
 
     debu() {
-      this.scene.debugLayer.show({
-        embedMode: true,
-        gizmoCamera: this.camera,
-      });
+      try {
+        this.scene.debugLayer.show({
+          embedMode: true,
+          gizmoCamera: this.camera,
+        });
 
-      // new DebugLayer(this.scene).show({
-      //   embedMode: true,
-      //   gizmoCamera: this.camera,
-      // });
-      console.log("aaa--");
+        // new DebugLayer(this.scene).show({
+        //   embedMode: true,
+        //   gizmoCamera: this.camera,
+        // });
+        console.log("aaa-- " + stringify12(this.scene));
+      } catch (error) {
+        const scene = this.returnScene();
+        scene.debugLayer.show({
+          embedMode: true,
+          gizmoCamera: this.camera,
+        });
+        console.log("ccc--");
+      }
     }
 
     resize() {
@@ -190,6 +216,10 @@ export const BabylonProvider = ({ children }) => {
           .forEach((mesh) => {
             mesh.position.x += event.delta.x;
           });
+          setGizmoUpdate((prevValue)=>{
+           const gizmoUPDATE=[...prevValue];
+           return gizmoUPDATE;
+          })
       });
 
       // event on position gizmo y drag
@@ -199,6 +229,10 @@ export const BabylonProvider = ({ children }) => {
           .forEach((mesh) => {
             mesh.position.y += event.delta.y;
           });
+          setGizmoUpdate((prevValue)=>{
+            const gizmoUPDATE=[...prevValue];
+            return gizmoUPDATE;
+           })
       });
 
       // event on position gizmo z drag
@@ -208,6 +242,10 @@ export const BabylonProvider = ({ children }) => {
           .forEach((mesh) => {
             mesh.position.z += event.delta.z;
           });
+          setGizmoUpdate((prevValue)=>{
+            const gizmoUPDATE=[...prevValue];
+            return gizmoUPDATE;
+           })
       });
 
       // event on rotation gizmo x drag
@@ -218,7 +256,12 @@ export const BabylonProvider = ({ children }) => {
             // mesh.rotation.x += rotationGizmo.xGizmo.angle;
             mesh.rotate(Axis.X, rotationGizmo.xGizmo.angle, Space.LOCAL);
           });
+          setGizmoUpdate((prevValue)=>{
+            const gizmoUPDATE=[...prevValue];
+            return gizmoUPDATE;
+           });
         rotationGizmo.xGizmo.angle = 0;
+       
       });
 
       // event on rotation gizmo y drag
@@ -229,7 +272,12 @@ export const BabylonProvider = ({ children }) => {
             // mesh.rotation.y += rotationGizmo.yGizmo.angle;
             mesh.rotate(Axis.Y, rotationGizmo.yGizmo.angle, Space.LOCAL);
           });
+          setGizmoUpdate((prevValue)=>{
+            const gizmoUPDATE=[...prevValue];
+            return gizmoUPDATE;
+           });
         rotationGizmo.yGizmo.angle = 0;
+       
       });
 
       // event on rotation gizmo z drag
@@ -240,7 +288,12 @@ export const BabylonProvider = ({ children }) => {
             // mesh.rotation.z += rotationGizmo.zGizmo.angle;
             mesh.rotate(Axis.Z, rotationGizmo.zGizmo.angle, Space.LOCAL);
           });
+          setGizmoUpdate((prevValue)=>{
+            const gizmoUPDATE=[...prevValue];
+            return gizmoUPDATE;
+           });
         rotationGizmo.zGizmo.angle = 0;
+       
       });
 
       // click event
@@ -579,8 +632,10 @@ export const BabylonProvider = ({ children }) => {
         { width: 6, height: 6 },
         this.scene
       );
-      
-      console.log("Ground : " + this.ground + " ID : " + this.ground.position);
+
+      console.log(
+        "Ground : " + this.ground.layerMask + " ID : " + this.ground.position
+      );
     }
 
     generalInfo() {
@@ -800,7 +855,7 @@ export const BabylonProvider = ({ children }) => {
         Ground,
         Cylinder,
         Cone,
-        HemisphericLights,
+        HemisphericLights,gizmoUpdate,
       }}
     >
       {children}
