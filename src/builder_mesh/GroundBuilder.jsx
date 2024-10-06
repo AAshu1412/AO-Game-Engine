@@ -1,13 +1,11 @@
 import { useBabylon } from "@/babylon/useBabylon";
 import { useEffect, useState } from "react";
-import { Vector3 } from "@babylonjs/core";
+import { Vector3, Color3 } from "@babylonjs/core";
 
-function GroundBuilder({ index }) {
+function GroundBuilder({ index, typeOfLight }) {
   const [groundObject, setGroundObject] = useState();
   const [groundGeneralProperty, setGroundGeneralProperty] = useState([]);
-  const [groundTransformationsProperty, setGroundTransformationsProperty] =
-    useState([]);
-  const [groundDisplayProperty, setGroundDisplayProperty] = useState([]);
+  const [groundSetupProperty, setGroundSetupProperty] = useState([]);
   const { allMesh, setAllMesh } = useBabylon();
 
   useEffect(() => {
@@ -23,89 +21,31 @@ function GroundBuilder({ index }) {
           property: GroundObject.getClassName(),
           editable: false,
         },
-        {
-          name: "Vertices",
-          property: GroundObject.getTotalVertices(),
-          editable: false,
-        },
-        { name: "Faces", property: GroundObject.face, editable: false },
-        {
-          name: "Sub-meshes",
-          property: GroundObject.subMeshes.length,
-          editable: false,
-        },
+
         {
           name: "Parent",
           property: GroundObject.parent ? GroundObject.parent.name : "None",
           editable: false,
         },
         {
-          name: "Is enabled",
-          property: GroundObject.isEnabled(),
-          editable: true,
-        },
-        {
-          name: "Is pickable",
-          property: GroundObject.isPickable,
-          editable: true,
-        },
-        {
-          name: "Active Material",
-          property: GroundObject.material
-            ? GroundObject.material.getActiveTextures().length
-            : "None",
-          editable: false,
-        },
-      ];
-
-      const groundTransformerData = [
-        { name: "Position", property: GroundObject.position, editable: true },
-        { name: "Rotation", property: GroundObject.rotation, editable: true },
-        { name: "Scaling", property: GroundObject.scaling, editable: true },
-      ];
-
-      const groundDisplayData = [
-        {
-          name: "Visibility",
-          property: GroundObject.visibility,
-          editable: true,
-        },
-        {
-          name: "Orientation",
-          property: GroundObject.sideOrientation,
-          editable: true,
-        },
-        {
-          name: "Alpha Index",
-          property: GroundObject.alphaIndex,
-          editable: true,
-        },
-        {
-          name: "Receive Shadows",
-          property: GroundObject.receiveShadows,
-          editable: true,
-        },
-        {
-          name: "Infinite Distance",
-          property: GroundObject.infiniteDistance,
-          editable: true,
-        },
-        {
-          name: "Rendering Group ID",
-          property: GroundObject.renderingGroupId,
-          editable: true,
-        },
-        {
-          name: "Layer Mask",
-          property: GroundObject.layerMask,
+          name: "Intensity",
+          property: GroundObject.intensity,
           editable: true,
         },
       ];
 
+      const groundSetupData = [
+        { name: "Diffuse", property: GroundObject.diffuse, editable: true },
+        ...(typeOfLight == "hemisphericlight"
+          ? [{ name: "Ground", property: GroundObject.groundColor, editable: true }]
+          : []),
+        { name: "Specular", property: GroundObject.specular, editable: true },
+        { name: "Direction", property: GroundObject.direction, editable: true },
+      ];
       setGroundGeneralProperty(groundGeneralData);
-      setGroundTransformationsProperty(groundTransformerData);
-      setGroundDisplayProperty(groundDisplayData);
-      // console.log(GroundObject.name+"------")
+      setGroundSetupProperty(groundSetupData);
+      console.log(GroundObject.direction.x + "------");
+      console.log(GroundObject.diffuse.r + "+++++");
     } else {
       setGroundObject(undefined);
     }
@@ -116,69 +56,79 @@ function GroundBuilder({ index }) {
     setAllMesh((prevAllMesh) => {
       const mesh = [...prevAllMesh];
       if (name === "Name") mesh[index].name = value;
-      if (name === "Is enabled") mesh[index].setEnabled(value);
-      if (name === "Is pickable") mesh[index].isPickable = value;
-      if (name === "Position-PX")
-        mesh[index].position = new Vector3(
+      if (name === "Intensity") mesh[index].intensity = value;
+      if (name === "Diffuse-DR")
+        mesh[index].diffuse = new Color3(
           value,
-          mesh[index].position._y,
-          mesh[index].position._z
+          mesh[index].diffuse.g,
+          mesh[index].diffuse.b
         );
-      if (name === "Position-PY")
-        mesh[index].position = new Vector3(
-          mesh[index].position._x,
+      if (name === "Diffuse-DG")
+        mesh[index].diffuse = new Vector3(
+          mesh[index].diffuse.r,
           value,
-          mesh[index].position._z
+          mesh[index].diffuse.b
         );
-      if (name === "Position-PZ")
-        mesh[index].position = new Vector3(
-          mesh[index].position._x,
-          mesh[index].position._y,
+      if (name === "Diffuse-DB")
+        mesh[index].diffuse = new Vector3(
+          mesh[index].diffuse.r,
+          mesh[index].diffuse.g,
           value
         );
-      if (name === "Rotation-RX")
-        mesh[index].rotation = new Vector3(
+      if (name === "Ground-GR")
+        mesh[index].ground = new Color3(
           value,
-          mesh[index].rotation._y,
-          mesh[index].rotation._z
+          mesh[index].ground.g,
+          mesh[index].ground.b
         );
-      if (name === "Rotation-RY")
-        mesh[index].rotation = new Vector3(
-          mesh[index].rotation._x,
+      if (name === "Ground-GG")
+        mesh[index].ground = new Color3(
+          mesh[index].ground.r,
           value,
-          mesh[index].rotation._z
+          mesh[index].ground.b
         );
-      if (name === "Rotation-RZ")
-        mesh[index].rotation = new Vector3(
-          mesh[index].rotation._x,
-          mesh[index].rotation._y,
+      if (name === "Ground-GB")
+        mesh[index].ground = new Color3(
+          mesh[index].ground.r,
+          mesh[index].ground.g,
           value
         );
-      if (name === "Scaling-SX")
-        mesh[index].scaling = new Vector3(
+      if (name === "Specular-SR")
+        mesh[index].specular = new Color3(
           value,
-          mesh[index].scaling._y,
-          mesh[index].scaling._z
+          mesh[index].specular.g,
+          mesh[index].specular.b
         );
-      if (name === "Scaling-SY")
-        mesh[index].scaling = new Vector3(
-          mesh[index].scaling._x,
+      if (name === "Specular-SG")
+        mesh[index].specular = new Color3(
+          mesh[index].specular.r,
           value,
-          mesh[index].scaling._z
+          mesh[index].specular.b
         );
-      if (name === "Scaling-SZ")
-        mesh[index].scaling = new Vector3(
-          mesh[index].scaling._x,
-          mesh[index].scaling._y,
+      if (name === "Specular-SB")
+        mesh[index].specular = new Color3(
+          mesh[index].specular.r,
+          mesh[index].specular.g,
           value
         );
-      if (name === "Visibility") mesh[index].visibility = value;
-      if (name === "Orientation") mesh[index].sideOrientation = value;
-      if (name === "Alpha Index") mesh[index].alphaIndex = value;
-      if (name === "Receive Shadows") mesh[index].receiveShadows = value;
-      if (name === "Infinite Distance") mesh[index].infiniteDistance = value;
-      if (name === "Rendering Group ID") mesh[index].renderingGroupId = value;
-      if (name === "Layer Mask") mesh[index].layerMask = value;
+      if (name === "Direction-DX")
+        mesh[index].direction = new Vector3(
+          value,
+          mesh[index].direction.y,
+          mesh[index].direction.z
+        );
+      if (name === "Direction-DY")
+        mesh[index].direction = new Vector3(
+          mesh[index].direction.x,
+          value,
+          mesh[index].direction.z
+        );
+      if (name === "Direction-DZ")
+        mesh[index].direction = new Vector3(
+          mesh[index].direction.x,
+          mesh[index].direction.y,
+          value
+        );
 
       return mesh;
     });
@@ -202,20 +152,20 @@ function GroundBuilder({ index }) {
                     >
                       <h1>{val.name}</h1>
                       {val.editable ? (
-                        val.name === "Is enabled" ? (
+                        val.name === "Intensity" ? (
                           <input
-                            type="checkbox"
-                            checked={val.property}
+                            type="number"
+                            value={val.property}
                             onChange={(e) =>
-                              handleInputChange(val.name, e.target.checked)
+                              handleInputChange(val.name, e.target.value)
                             }
                           />
-                        ) : val.name === "Is pickable" ? (
+                        ) : val.name === "parent_" ? (
                           <input
-                            type="checkbox"
-                            checked={val.property}
+                            type="number"
+                            value={val.property}
                             onChange={(e) =>
-                              handleInputChange(val.name, e.target.checked)
+                              handleInputChange(val.name, e.target.value)
                             }
                           />
                         ) : (
@@ -241,7 +191,7 @@ function GroundBuilder({ index }) {
                 <h1 className="font-bold text-md">TRANSFORMS</h1>
               </div>
               <div className="flex flex-col">
-                {groundTransformationsProperty.map((val, key) => {
+                {groundSetupProperty.map((val, key) => {
                   return (
                     <div
                       key={key}
@@ -249,14 +199,14 @@ function GroundBuilder({ index }) {
                     >
                       <h1>{val.name}</h1>
                       {val.editable ? (
-                        val.name === "Position" ? (
+                        val.name === "Diffuse" ? (
                           <div className="flex flex-col gap-2">
                             <input
                               type="number"
-                              value={val.property._x}
+                              value={val.property.r}
                               onChange={(e) =>
                                 handleInputChange(
-                                  `${val.name}-PX`,
+                                  `${val.name}-DR`,
                                   e.target.value
                                 )
                               }
@@ -264,10 +214,10 @@ function GroundBuilder({ index }) {
                             />
                             <input
                               type="number"
-                              value={val.property._y}
+                              value={val.property.g}
                               onChange={(e) =>
                                 handleInputChange(
-                                  `${val.name}-PY`,
+                                  `${val.name}-DG`,
                                   e.target.value
                                 )
                               }
@@ -275,24 +225,24 @@ function GroundBuilder({ index }) {
                             />
                             <input
                               type="number"
-                              value={val.property._z}
+                              value={val.property.b}
                               onChange={(e) =>
                                 handleInputChange(
-                                  `${val.name}-PZ`,
+                                  `${val.name}-DB`,
                                   e.target.value
                                 )
                               }
                               className="w-32 bg-gray-700 text-white p-1"
                             />
                           </div>
-                        ) : val.name === "Rotation" ? (
+                        ) : val.name === "Ground" ? (
                           <div className="flex flex-col gap-2">
                             <input
                               type="number"
-                              value={val.property._x}
+                              value={val.property.r}
                               onChange={(e) =>
                                 handleInputChange(
-                                  `${val.name}-RX`,
+                                  `${val.name}-GR`,
                                   e.target.value
                                 )
                               }
@@ -300,10 +250,10 @@ function GroundBuilder({ index }) {
                             />
                             <input
                               type="number"
-                              value={val.property._y}
+                              value={val.property.g}
                               onChange={(e) =>
                                 handleInputChange(
-                                  `${val.name}-RY`,
+                                  `${val.name}-GG`,
                                   e.target.value
                                 )
                               }
@@ -311,10 +261,46 @@ function GroundBuilder({ index }) {
                             />
                             <input
                               type="number"
-                              value={val.property._z}
+                              value={val.property.b}
                               onChange={(e) =>
                                 handleInputChange(
-                                  `${val.name}-RZ`,
+                                  `${val.name}-GB`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-32 bg-gray-700 text-white p-1"
+                            />
+                          </div>
+                        ) : val.name === "Specular" ? (
+                          <div className="flex flex-col gap-2">
+                            <input
+                              type="number"
+                              value={val.property.r}
+                              onChange={(e) =>
+                                handleInputChange(
+                                  `${val.name}-SR`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-32 bg-gray-700 text-white p-1"
+                            />
+                            <input
+                              type="number"
+                              value={val.property.g}
+                              onChange={(e) =>
+                                handleInputChange(
+                                  `${val.name}-SG`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-32 bg-gray-700 text-white p-1"
+                            />
+                            <input
+                              type="number"
+                              value={val.property.b}
+                              onChange={(e) =>
+                                handleInputChange(
+                                  `${val.name}-SB`,
                                   e.target.value
                                 )
                               }
@@ -325,10 +311,10 @@ function GroundBuilder({ index }) {
                           <div className="flex flex-col gap-2">
                             <input
                               type="number"
-                              value={val.property._x}
+                              value={val.property.x}
                               onChange={(e) =>
                                 handleInputChange(
-                                  `${val.name}-SX`,
+                                  `${val.name}-DX`,
                                   e.target.value
                                 )
                               }
@@ -336,10 +322,10 @@ function GroundBuilder({ index }) {
                             />
                             <input
                               type="number"
-                              value={val.property._y}
+                              value={val.property.y}
                               onChange={(e) =>
                                 handleInputChange(
-                                  `${val.name}-SY`,
+                                  `${val.name}-DY`,
                                   e.target.value
                                 )
                               }
@@ -347,10 +333,10 @@ function GroundBuilder({ index }) {
                             />
                             <input
                               type="number"
-                              value={val.property._z}
+                              value={val.property.z}
                               onChange={(e) =>
                                 handleInputChange(
-                                  `${val.name}-SZ`,
+                                  `${val.name}-DZ`,
                                   e.target.value
                                 )
                               }
@@ -360,101 +346,6 @@ function GroundBuilder({ index }) {
                         )
                       ) : (
                         <h1>0,0,0</h1>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-            <div className="flex flex-col">
-              <div className="bg-[#555555] p-1">
-                <h1 className="font-bold text-md">DISPLAY</h1>
-              </div>
-              <div className="flex flex-col">
-                {groundDisplayProperty.map((val, key) => {
-                  return (
-                    <div
-                      key={key}
-                      className="flex flex-row justify-between p-1 border-b border-[#555555]"
-                    >
-                      <h1 className="w-16">{val.name}</h1>
-                      {val.editable ? (
-                        val.name === "Visibility" ? (
-                          <input
-                            type="range"
-                            min="0"
-                            max="1"
-                            step="0.01"
-                            value={val.property}
-                            onChange={(e) =>
-                              handleInputChange(val.name, e.target.value)
-                            }
-                            className="w-32 bg-gray-700 text-white p-1"
-                          />
-                        ) : val.name === "Orientation" ? (
-                          <input
-                            type="number"
-                            value={val.property}
-                            onChange={(e) =>
-                              handleInputChange(val.name, e.target.value)
-                            }
-                            className="w-32 bg-gray-700 text-white p-1"
-                          />
-                        ) : val.name === "Alpha Index" ? (
-                          <input
-                            type="number"
-                            value={val.property}
-                            onChange={(e) =>
-                              handleInputChange(val.name, e.target.value)
-                            }
-                            className="w-32 bg-gray-700 text-white p-1"
-                          />
-                        ) : val.name === "Receive Shadows" ? (
-                          <input
-                            type="checkbox"
-                            checked={val.property}
-                            onChange={(e) =>
-                              handleInputChange(val.name, e.target.checked)
-                            }
-                          />
-                        ) : val.name === "Infinite Distance" ? (
-                          <input
-                            type="checkbox"
-                            checked={val.property}
-                            onChange={(e) =>
-                              handleInputChange(val.name, e.target.checked)
-                            }
-                          />
-                        ) : val.name === "Rendering Group ID" ? (
-                          <input
-                            type="number"
-                            value={val.property}
-                            onChange={(e) =>
-                              handleInputChange(val.name, e.target.value)
-                            }
-                            className="w-32 bg-gray-700 text-white p-1"
-                          />
-                        ) : val.name === "Layer Mask" ? (
-                          <input
-                            type="number"
-                            value={val.property}
-                            onChange={(e) =>
-                              handleInputChange(val.name, e.target.value)
-                            }
-                            className="w-32 bg-gray-700 text-white p-1"
-                          />
-                        ) : (
-                          <input
-                            type="text"
-                            value={val.property}
-                            onChange={(e) =>
-                              handleInputChange(val.name, e.target.value)
-                            }
-                            className="w-32 bg-gray-700 text-white p-1"
-                          />
-                        )
-                      ) : (
-                        <h1>{val.property}</h1>
                       )}
                     </div>
                   );

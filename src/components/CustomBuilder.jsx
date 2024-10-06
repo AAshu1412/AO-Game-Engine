@@ -6,15 +6,17 @@ import {
   ResizablePanelGroup,
 } from "./ui/resizable";
 import CommonMeshBuilder from "../builder_mesh/CommonMeshBuilder";
+import GroundBuilder from "@/builder_mesh/GroundBuilder";
 
 function CustomBuilder() {
   const { allMesh } = useBabylon();
   const [treeViewData, setTreeViewData] = useState({
     id: 0,
     name: "Scene",
+    type:"hemisphericlight",
     children: [],
   });
-  const [saveIndex, setSaveIndex] = useState(null);
+  const [saveIndexAndType, setSaveIndexAndType] = useState({index:null,type:""});
 
   const addChildToParent = (tree, parentId, child) => {
     if (tree.id === parentId) {
@@ -43,9 +45,11 @@ function CustomBuilder() {
         parentId = parent.uniqueId;
       }
       const meshName = val.name;
+      const meshType=val.getClassName();
       const newNode = {
         id: uniqueId,
         name: meshName,
+        type:meshType,
         _index: index,
         children: [],
         isOpen: false,
@@ -79,7 +83,9 @@ function CustomBuilder() {
   const handleClick = (node) => {
     console.log(`Clicked on: ${node.name}`);
     // console.log(`Class: ${node}`);
-    setSaveIndex(node._index);
+    
+      if (node.id!=0)
+      setSaveIndexAndType({index:node._index,type:node.type});
   };
 
   const renderTree = (node) => (
@@ -106,7 +112,7 @@ function CustomBuilder() {
   );
   // console.log(JSON.stringify(treeViewData));
   return (
-    <div className="w-[15%] bg-[#333333] border-2 border-red-600">
+    <div className="w-[15%] bg-[#333333] border-2 border-[#2cead7]">
       <ResizablePanelGroup direction="vertical">
         <ResizablePanel defaultSize={25}>
           <div className="flex flex-col overflow-auto">
@@ -120,7 +126,15 @@ function CustomBuilder() {
         <ResizablePanel defaultSize={75}>
           <div className="flex flex-col overflow-auto">
             <span className=" text-white">Resizable Panel</span>
-            <CommonMeshBuilder index={saveIndex} />
+            {
+  saveIndexAndType.type.toLowerCase() === "hemisphericlight" || 
+  saveIndexAndType.type.toLowerCase() === "directionallight" ? (
+    <GroundBuilder index={saveIndexAndType.index} typeOfLight={saveIndexAndType.type.toLowerCase()} />
+  ) : (
+    <CommonMeshBuilder index={saveIndexAndType.index} />
+  )
+}
+  
           </div>
         </ResizablePanel>
       </ResizablePanelGroup>

@@ -794,6 +794,7 @@ export const BabylonProvider = ({ children }) => {
         new Vector3(0, 1, 0),
         this.scene
       );
+      console.log(this.hemisphericLight.getClassName());
     }
 
     setDirection(x, y, z) {
